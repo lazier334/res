@@ -1,0 +1,23 @@
+name: 自动部署网页到 GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'page:')) || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出仓库代码
+        uses: actions/checkout@v4
+
+      - name: 部署到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GH_PAGES_TOKEN }}
+          publish_dir: ./html
+          publish_branch: gh-pages
+          force_orphan: true
