@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,28 @@
     <meta name="description" content="Description">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+    <style>
+        html,
+        body {
+            margin: 0 auto !important;
+            padding: 0 !important;
+            width: 100% !important;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            padding-right: calc(100vw - 100%) !important;
+        }
+
+        /* 覆盖复制按钮的默认样式 */
+        .docsify-copy-code-button {
+            border-radius: 8px !important;
+            background-color: rgba(0, 100, 0, 0.2) !important;
+            margin: 10px;
+        }
+
+        .docsify-copy-code-button:hover {
+            background-color: #73aa24 !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -15,6 +37,8 @@
     <script src="./docsifyConfig.js"></script>
     <!-- Docsify v4 -->
     <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2/dist/docsify-copy-code.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
 </body>
 
 </html>

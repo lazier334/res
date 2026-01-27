@@ -358,13 +358,13 @@ class DocsifyConfig {
     const dc = {};
     // 编写配置
     dc.repo = 'https://github.com/lazier334/res';
-    dc.loadNavbar = '_navbar.md';
-    dc.loadSidebar = '_sidebar.md';
+    dc.loadNavbar = '_右上角导航栏_navbar.md';
+    dc.loadSidebar = '_左侧导航栏_sidebar.md';
     dc.subMaxLevel = 3;
     dc.auto2top = true;
     dc.basePath = '/';
-    dc.coverpage = '_coverpage.md';
-    // dc.logo = ''
+    dc.coverpage = '_封面页_coverpage.md';
+    dc.logo = 'res/icon.svg';
     dc.name = 'Lazier334';
     dc.autoHeader = true;
     dc.executeScript = true;
@@ -372,6 +372,25 @@ class DocsifyConfig {
     dc.formatUpdated = '{MM}/{DD} {HH}:{mm}';
     dc.fallbackLanguages = ['zh', 'en'];
     dc.notFoundPage = '_404.md';
+
+    // 搜索插件的配置
+    dc.search = {
+        paths: 'auto',            // 可选，'auto' 或手动指定文件路径数组
+        placeholder: '搜索...',   // 搜索框占位文字
+        noData: '找不到相关内容',   // 无结果时显示的文字
+        depth: 6,                 // 可选，搜索标题的最大层级（1-6）
+        maxAge: 86400000,         // 可选，索引过期时间（毫秒，默认一天）
+    }
+
+    // 复制插件的配置
+    dc.copyCode = {
+        buttonText: 'copy',         // 复制按钮默认文本
+        errorText: '复制失败！',     // 复制失败提示文本
+        successText: '复制成功！',   // 复制成功提示文本
+        timeout: 2000,              // 提示文本显示时长（毫秒）
+        align: 'bottom',            // 按钮位置：top/bottom/top right/bottom right
+        color: 'var(--theme-color)' // 按钮颜色（适配docsify主题）
+    }
 
     // 使用
     window.$docsify = dc;
