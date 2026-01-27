@@ -358,12 +358,15 @@ class DocsifyConfig {
     const dc = {};
     // 编写配置
     dc.repo = 'https://github.com/lazier334/res';
-    dc.loadNavbar = '_右上角导航栏_navbar.md';
-    dc.loadSidebar = '_左侧导航栏_sidebar.md';
+    // 右上角导航栏
+    dc.loadNavbar = '_navbar.md';
+    // 左侧导航栏
+    dc.loadSidebar = '_sidebar.md';
     dc.subMaxLevel = 3;
     dc.auto2top = true;
     dc.basePath = '/';
-    dc.coverpage = '_封面页_coverpage.md';
+    // 封面页
+    dc.coverpage = '_coverpage.md';
     dc.logo = 'res/icon.svg';
     dc.name = 'Lazier334';
     dc.autoHeader = true;
