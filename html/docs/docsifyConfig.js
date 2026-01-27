@@ -364,10 +364,10 @@ class DocsifyConfig {
     dc.loadSidebar = '_sidebar.md';
     dc.subMaxLevel = 3;
     dc.auto2top = true;
-    dc.basePath = '/';
+    dc.basePath = '/docs';
     // 封面页
     dc.coverpage = '_coverpage.md';
-    dc.logo = 'res/icon.svg';
+    dc.logo = 'res/favicon.ico';
     dc.name = 'Lazier334';
     dc.autoHeader = true;
     dc.executeScript = true;
