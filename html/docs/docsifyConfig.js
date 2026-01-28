@@ -361,7 +361,7 @@ class DocsifyConfig {
     // 右上角导航栏
     dc.loadNavbar = '_navbar.md';
     // 左侧导航栏
-    dc.loadSidebar = '/_sidebar.md';
+    dc.loadSidebar = '_sidebar.md';
     dc.subMaxLevel = 3;
     dc.auto2top = true;
     dc.basePath = '/docs/';
