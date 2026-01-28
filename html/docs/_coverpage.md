@@ -16,7 +16,7 @@
 
 <br>
 <p align="center">
-  <a href="#/mds/index.md" style="display: inline-block; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 0.8rem 2rem; margin: 0.5rem; border-radius: 2rem; text-decoration: none; font-weight: 600; box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3); transition: all 0.3s ease;">阅读</a>
+  <a href="#/README.md" style="display: inline-block; background: linear-gradient(135deg, #4caf50, #66bb6a); color: white; padding: 0.8rem 2rem; margin: 0.5rem; border-radius: 2rem; text-decoration: none; font-weight: 600; box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3); transition: all 0.3s ease;">阅读</a>
   <a href="https://github.com/lazier334/res" style="display: inline-block; background: transparent; color: #4caf50; padding: 0.8rem 2rem; margin: 0.5rem; border-radius: 2rem; text-decoration: none; font-weight: 600; border: 2px solid #4caf50; transition: all 0.3s ease;">贡献</a>
 </p>
 
