@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
     <style>
+        /* 处理左偏移问题 */
         html,
         body {
             margin: 0 auto !important;
@@ -32,8 +33,9 @@
 
         /* 右上角github的背景色 */
         .github-corner svg {
-            fill: #73aa24;
+            fill: #72aa2470;
             color: #fff;
+            transition: fill 0.3s ease;
         }
 
         .github-corner:hover svg {

@@ -361,7 +361,7 @@ class DocsifyConfig {
     // 右上角导航栏
     dc.loadNavbar = '_navbar.md';
     // 左侧导航栏
-    dc.loadSidebar = '_sidebar.md';
+    dc.loadSidebar = '/_sidebar.md';
     dc.subMaxLevel = 3;
     dc.auto2top = true;
     dc.basePath = '/docs/';
@@ -395,6 +395,17 @@ class DocsifyConfig {
         color: 'var(--theme-color)' // 按钮颜色（适配docsify主题）
     }
 
+    // 自定义的源文件基础地址，在 openDocByGithub() 中使用
+    dc.originBaseUrl = 'https://github.com/lazier334/res/blob/gh-pages/docs';
     // 使用
     window.$docsify = dc;
-})()
+})();
+
+/**
+ * 在github打开文档
+ */
+function openDocByGithub() {
+    let dir = window.$docsify.originBaseUrl + location.href.split('#').splice(1).join('#');
+    if (!dir.endsWith('.md')) dir += '.md';
+    window.open(dir)
+}
