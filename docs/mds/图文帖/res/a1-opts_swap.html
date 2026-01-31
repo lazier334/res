@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android 应用 Swap 内存分析 & ADB命令生成</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+        body {
+            padding: 15px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .filter-box {
+            margin-bottom: 10px;
+        }
+        .filter-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .btn-extra {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .toggle-btn, .gen-btn, .download-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex: 1;
+            min-width: 120px;
+        }
+        .toggle-btn {
+            background-color: #ff9800;
+        }
+        .toggle-btn:hover {
+            background-color: #f57c00;
+        }
+        .gen-btn {
+            background-color: #f44336;
+        }
+        .gen-btn:hover {
+            background-color: #d32f2f;
+        }
+        .download-btn {
+            background-color: #4CAF50;
+        }
+        .download-btn:hover {
+            background-color: #388E3C;
+        }
+        .input-area {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 0.9rem;
+        }
+        #dataInput {
+            height: 120px;
+            margin-bottom: 10px;
+        }
+        #adbCmdOutput {
+            height: 100px;
+            margin-top: 10px;
+            background-color: #f9f9f9;
+            font-family: monospace;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button, input[type="file"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        input[type="file"] {
+            background-color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        button:hover {
+            background-color: #1976D2;
+        }
+        input[type="file"]:hover {
+            background-color: #388E3C;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.85rem;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            user-select: none;
+        }
+        th:hover {
+            background-color: #e0e0e0;
+            cursor: pointer;
+        }
+        .th-check {
+            width: 50px;
+            text-align: center;
+        }
+        .th-check input {
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .empty-tip {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 0.7rem;
+        }
+        .pid-list {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pkg-name {
+            max-width: 240px;
+            word-break: break-all;
+            vertical-align: top;
+            width: 30%; 
+        }
+        .check-item {
+            text-align: center;
+        }
+        .check-item input {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>应用 Swap 内存分析 & ADB命令生成</h1>
+        <div class="filter-box">
+            <input type="text" id="pkgFilter" placeholder="输入包名关键词过滤（如 com.android）">
+        </div>
+        <div class="input-area">
+            <textarea id="dataInput" placeholder="粘贴脚本输出数据，格式：包名 | PID | 内存大小"></textarea>
+            <div class="btn-group">
+                <button id="parseBtn">解析粘贴的数据</button>
+                <input type="file" id="fileInput" accept=".txt,.log">
+            </div>
+        </div>
+        <div class="btn-extra">
+            <button id="toggleViewBtn" class="toggle-btn" disabled>切换到分开视图</button>
+            <button id="genAdbCmdBtn" class="gen-btn" disabled>生成ADB强制停止命令</button>
+            <button id="downloadCmdBtn" class="download-btn" disabled>下载kill.sh文件</button>
+        </div>
+        <div class="input-area">
+            <label for="adbCmdOutput">生成的ADB命令：</label>
+            <textarea id="adbCmdOutput"></textarea>
+        </div>
+        
+        <div id="tableContainer">
+            <table id="appTable">
+                <thead>
+                    <tr>
+                        <!-- 复选框标题栏改为全选框 -->
+                        <th class="th-check"><input type="checkbox" id="selectAll"></th>
+                        <th id="thPkg">应用包名 <span class="sort-icon"></span></th>
+                        <th id="thPid" class="pid-list">PID 列表 <span class="sort-icon"></span></th>
+                        <th id="thSwap">Swap 内存 <span class="sort-icon"></span></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr class="empty-tip">
+                        <td colspan="4">请粘贴数据或上传文件后解析</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        let rawData = [];         // 原始未合并数据
+        let mergedData = [];      // 合并后数据
+        let isMerged = true;      // 当前视图状态
+        // 排序配置：默认按 Swap 降序
+        let sortConf = {
+            by: 'swap',
+            order: 'desc'
+        };
+
+        function clearTable() {
+            document.getElementById('tableBody').innerHTML = 
+                '<tr class="empty-tip"><td colspan="4">请粘贴数据或上传文件后解析</td></tr>';
+            document.getElementById('toggleViewBtn').disabled = true;
+            document.getElementById('genAdbCmdBtn').disabled = true;
+            document.getElementById('downloadCmdBtn').disabled = true;
+            document.getElementById('adbCmdOutput').value = '';
+            document.getElementById('selectAll').checked = false;
+            document.querySelectorAll('.sort-icon').forEach(icon => icon.textContent = '');
+        }
+
+        // 千位分隔符格式化
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // 提取Swap数值
+        function getSwapValue(swapStr) {
+            const num = parseFloat(swapStr.replace(/[^\d.]/g, ''));
+            return isNaN(num) ? 0 : num;
+        }
+
+        // 解析原始数据并生成双数据集：合并视图保留全部PID（保留原始逻辑）
+        function parseRawData(rawText) {
+            rawData = [];
+            const lines = rawText.trim().split('\n');
+            
+            lines.forEach(line => {
+                if (!line.includes('|')) return;
+                const [pkg, pid, swap] = line.split('|').map(item => item.trim());
+                const swapVal = getSwapValue(swap);
+                const swapUnit = swap.replace(/[\d.]/g, '').trim() || 'KB';
+                rawData.push({
+                    pkg,
+                    pid: parseInt(pid) || 0, // 单个PID数值（用于排序）
+                    pidStr: pid,             // 单个PID字符串
+                    swap: formatNumber(swapVal.toFixed(0)),
+                    swapVal,
+                    swapUnit
+                });
+            });
+
+            // 生成合并数据：保留全部PID列表，排序时仅取首个PID数值
+            const dataMap = {};
+            rawData.forEach(item => {
+                if (!dataMap[item.pkg]) {
+                    dataMap[item.pkg] = {
+                        pids: new Set([item.pidStr]), // 存储全部PID字符串
+                        firstPid: item.pid,           // 首个PID数值（用于排序）
+                        totalSwap: item.swapVal,
+                        swapUnit: item.swapUnit
+                    };
+                } else {
+                    dataMap[item.pkg].pids.add(item.pidStr);
+                    dataMap[item.pkg].totalSwap += item.swapVal;
+                }
+            });
+
+            mergedData = Object.entries(dataMap).map(([pkg, info]) => ({
+                pkg,
+                pid: info.firstPid,                      // 首个PID数值（排序用）
+                pidStr: Array.from(info.pids).join(','), // 全部PID拼接字符串（显示用）
+                swap: formatNumber(info.totalSwap.toFixed(0)),
+                swapVal: info.totalSwap,
+                swapUnit: info.swapUnit
+            }));
+        }
+
+        // 通用排序函数：合并视图按首个PID排序（保留原始逻辑）
+        function sortData(data) {
+            return [...data].sort((a, b) => {
+                let compareVal = 0;
+                switch (sortConf.by) {
+                    case 'pkg':
+                        compareVal = a.pkg.localeCompare(b.pkg);
+                        break;
+                    case 'pid':
+                        compareVal = a.pid - b.pid;
+                        break;
+                    case 'swap':
+                    default:
+                        compareVal = a.swapVal - b.swapVal;
+                        break;
+                }
+                return sortConf.order === 'asc' ? compareVal : -compareVal;
+            });
+        }
+
+        // 过滤函数（保留原始逻辑）
+        function filterData(data) {
+            const keyword = document.getElementById('pkgFilter').value.trim();
+            if (!keyword) return data;
+            return data.filter(item => item.pkg.includes(keyword));
+        }
+
+        // 更新排序图标显示（保留原始逻辑）
+        function updateSortIcon() {
+            document.querySelectorAll('.sort-icon').forEach(icon => icon.textContent = '');
+            const targetIcon = document.getElementById(`th${sortConf.by.charAt(0).toUpperCase() + sortConf.by.slice(1)}`).querySelector('.sort-icon');
+            targetIcon.textContent = sortConf.order === 'asc' ? '↑' : '↓';
+        }
+
+        // 渲染表格：保留原始跳转逻辑
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const data = isMerged ? mergedData : rawData;
+            const processedData = sortData(filterData(data));
+
+            if (processedData.length === 0) {
+                tbody.innerHTML = '<tr class="empty-tip"><td colspan="4">无匹配数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            processedData.forEach(item => {
+                const detailUrl = `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;package=${item.pkg};end`;
+                const showPid = isMerged ? item.pidStr : item.pidStr;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="check-item"><input type="checkbox" name="pkgCheck" value="${item.pkg}"></td>
+                    <td class="pkg-name"><a href="${detailUrl}" target="_blank">${item.pkg}</a></td>
+                    <td class="pid-list" title="${showPid}">${showPid}</td>
+                    <td>${item.swap} ${item.swapUnit}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateSortIcon();
+            document.getElementById('toggleViewBtn').textContent = isMerged ? '切换到分开视图' : '切换到合并视图';
+            document.getElementById('toggleViewBtn').disabled = false;
+            document.getElementById('genAdbCmdBtn').disabled = false;
+            // 只有生成命令后才启用下载按钮
+            document.getElementById('downloadCmdBtn').disabled = !document.getElementById('adbCmdOutput').value;
+        }
+
+        // 生成ADB命令（包名去重）
+        function generateAdbCmd() {
+            const checkboxes = document.querySelectorAll('input[name="pkgCheck"]:checked');
+            const pkgSet = new Set(); // 用Set自动去重
+
+            // 收集勾选的包名
+            checkboxes.forEach(cb => {
+                if (cb.value) pkgSet.add(cb.value);
+            });
+
+            if (pkgSet.size === 0) {
+                alert('请先勾选需要强制停止的应用！');
+                return;
+            }
+
+            // 生成ADB命令（无需root的强制停止命令）
+            const cmdList = Array.from(pkgSet).map(pkg => `adb shell am force-stop ${pkg}`);
+            document.getElementById('adbCmdOutput').value = cmdList.join('\n');
+            // 启用下载按钮
+            document.getElementById('downloadCmdBtn').disabled = false;
+        }
+
+        // 下载ADB命令为kill.sh文件
+        function downloadAdbCmd() {
+            const cmdContent = document.getElementById('adbCmdOutput').value;
+            if (!cmdContent) {
+                alert('请先生成ADB命令！');
+                return;
+            }
+
+            // 创建Blob对象（shell脚本格式）
+            const blob = new Blob([cmdContent], {
+                // type: 'text/plain; charset=utf-8',
+                type: 'application/x-sh',
+                filename: 'kill.sh'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'kill.sh'; // 下载文件名
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+
+            // 释放资源
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        // 全选/全不选功能
+        function bindSelectAllEvent() {
+            const selectAll = document.getElementById('selectAll');
+            selectAll.addEventListener('change', (e) => {
+                const checkboxes = document.querySelectorAll('input[name="pkgCheck"]');
+                checkboxes.forEach(cb => {
+                    cb.checked = e.target.checked;
+                });
+            });
+        }
+
+        // 绑定排序点击事件（保留原始逻辑）
+        function bindSortEvents() {
+            ['pkg', 'pid', 'swap'].forEach(key => {
+                document.getElementById(`th${key.charAt(0).toUpperCase() + key.slice(1)}`).addEventListener('click', () => {
+                    if (sortConf.by === key) {
+                        sortConf.order = sortConf.order === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortConf.by = key;
+                        sortConf.order = 'asc';
+                    }
+                    renderTable();
+                });
+            });
+        }
+
+        // 初始化事件绑定
+        bindSortEvents();
+        bindSelectAllEvent();
+
+        // 解析粘贴数据（保留原始逻辑）
+        document.getElementById('parseBtn').addEventListener('click', () => {
+            const input = document.getElementById('dataInput').value.trim();
+            if (!input) {
+                alert('请先粘贴数据！');
+                return;
+            }
+            parseRawData(input);
+            isMerged = true;
+            sortConf = { by: 'swap', order: 'desc' };
+            renderTable();
+        });
+
+        // 文件上传解析（保留原始逻辑，确保文件读取正常）
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const fileContent = event.target.result;
+                parseRawData(fileContent);
+                isMerged = true;
+                sortConf = { by: 'swap', order: 'desc' };
+                renderTable();
+            };
+            // 确保按文本格式读取文件
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        // 过滤输入框事件（保留原始逻辑）
+        document.getElementById('pkgFilter').addEventListener('input', renderTable);
+
+        // 视图切换事件（保留原始逻辑）
+        document.getElementById('toggleViewBtn').addEventListener('click', () => {
+            isMerged = !isMerged;
+            document.getElementById('selectAll').checked = false; // 切换视图时取消全选
+            renderTable();
+        });
+
+        // 绑定生成ADB命令按钮事件
+        document.getElementById('genAdbCmdBtn').addEventListener('click', generateAdbCmd);
+
+        // 绑定下载按钮事件
+        document.getElementById('downloadCmdBtn').addEventListener('click', downloadAdbCmd);
+
+        // 初始化
+        clearTable();
+    </script>
+</body>
+</html>
