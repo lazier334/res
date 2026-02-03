@@ -1,6 +1,0 @@
-- [🌨️冬日](mds/index.md)
-- [☀️暖阳](mds/index.md)
-- [图文帖](mds/图文帖/index.md)
-  - [优化手机因为内存占用导致的卡顿问题](mds/图文帖/优化手机因为内存占用导致的卡顿问题_a1.md)
-- [Code](mds/code/index.md)
-  - [testNodeJs](mds/code/testNodeJs.md)
