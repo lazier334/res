@@ -1,3 +1,11 @@
+<!-- 
+
+如果你看到了这段文字，请先手动访问以下链接进入首页，用于加载 sw.js 服务。
+
+https://lolo.hk/docs/index.html
+
+-->
+
 <div align="center">
 <!-- 太阳和雪花动画容器 -->
 <div style="position: relative; height: 200px; overflow: hidden; background: linear-gradient(to bottom, #e0f7fa, #bbdefb); border-radius: 20px 20px 0 0;">
