@@ -24,7 +24,7 @@
 </head>
 
 <body class="markdown-body">
-    <script> window.mdText = '${MD_TEXT}'; </script>
+    <script> window.mdText = '${MD_TEXT}'; window.urlSuffix = '${URL_SUFFIX}';</script>
     <!-- 引入 LazierDocs 核心 -->
     <script src="./lazierDocs.js"></script>
     <!-- 引入 markdown-it 核心 -->
@@ -39,6 +39,8 @@
     <!-- 自定义的重写内容 -->
     <script>
         (() => {
+            // 如果这个标识没被更改，那么清除他
+            if (window.urlSuffix == '${URL_' + 'SUFFIX}') window.urlSuffix = '';
             LazierDocs.basePath = '/docs/';
             updateCacheFiles();
             // 增加缓存其他资源文件
@@ -168,7 +170,7 @@
                         const blankString = new Array(num * 4).fill(' ').join('');
                         for (const k in d) {
                             const v = d[k];
-                            const li = `${blankString}* [${k}](${path + k})`;
+                            const li = `${blankString}* [${k}](${path + k + window.urlSuffix})`;
                             if (typeof v == 'object' && v != null) {
                                 re.push(li + '\n' + scanfJson(v, num + 1, path + k + '/'))
                             } else {
@@ -195,6 +197,20 @@
                     }
                     loadMds(document.querySelector('#mainOtherMds'));
                 }
+            };
+
+            LazierDocs.htmlOnload = function () {
+                this.hookWinddowOnloadBefore();
+                // 渲染 .md 文件
+                if (location.pathname.endsWith('.md') || location.pathname.endsWith('.md.html')) {
+                    this.loadMarkdown();
+                    this.hookLoadedMD()
+                }
+                // 缓存数据
+                if (location.pathname.endsWith('/index.html')) {
+                    this.hookCacheMdList();
+                }
+                this.hookWinddowOnloadAfter();
             }
         })()
     </script>
