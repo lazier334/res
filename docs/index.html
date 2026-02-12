@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>lazierDocs markdown-it</title>
-    <link rel="stylesheet" href="./github-markdown.min.css">
+    <link rel="stylesheet" href="/docs/github-markdown.min.css">
     <style>
         * {
             margin: 0;
@@ -166,7 +166,7 @@
                 if (typeof toElement?.innerHTML != 'string') return '无效的元素';
 
                 let html = '';
-                fetch('ls.json').then(res => res.json()).then(json => {
+                fetch('/docs/ls.json').then(res => res.json()).then(json => {
                     // 把 json 转成书籍列表md语言，再使用md组件渲染
                     const scanfJson = (d, num, path) => {
                         const re = [];
