@@ -1,35 +1,62 @@
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import path from 'path';
+import { _dirname, genCopy, funs } from '../utils/gen-copy.js';
+import { replaceAndWrite, genHandler } from '../utils/gen-handler.js';
+const { path, fs } = funs;
 
-
-const lc = {
-    rootDir: path.join(_dirname(), '../docs'),
-    outdir: path.join(_dirname(), '../html'),
-    indir: '下方代码进行填充',
-    // 复制时排除指定的文件，使用 "/" 和 "\\" 都可以
-    excludeList: [
+const copyConfig = {
+    indir: path.join(_dirname(import.meta.url), '..'),
+    outdir: path.join(_dirname(import.meta.url), '../html'),
+    excludeList: [],
+    clearList: [
         'docs/build-docs.js',
     ],
-    // TODO 清理复制完成后输出目录的指定文件
-    clearList: [
-        // 'aa/bb/c'
-    ],
-    // TODO 映射复制的文件与目标目录
     dirMap: {
         'docs': 'docs',
-    }
+    },
+};
+const handlerConfig = {
+    mdFlag: '${MD_TEXT}',
+    index: fs.readFileSync(path.join(_dirname(import.meta.url), 'index.html'), { encoding: 'utf8' }),
+    outdir: path.join(_dirname(import.meta.url), '../html'),
+    scanDirs: [
+        'docs',
+    ],
+    handleFileMap: {},
+    /**
+     * 
+     * @param {string} filepath 
+     */
+    manualHandler(filepath) {
+        if (filepath.endsWith('.md')) {
+            const newPath = filepath + '.html';
+            const md = fs.readFileSync(filepath, { encoding: 'utf8' });
+            const encoder = new TextEncoder();
+            let html = this.index.replaceAll(this.mdFlag, encoder.encode(md))
+            fs.writeFileSync(newPath, html);
+            fs.unlinkSync(filepath);
+            console.log('已处理md文件:', filepath, '->', newPath);
+            return true;
+        }
+    },
+    status: {
+        TRUE: [],
+        FALSE: [],
+        EDIT: []
+    },
+    moreLog: false
 };
 
 
-console.log(lc)
+console.log(handlerConfig);
+buildCopy();
 
-export default lc;
+
+
+export default buildCopy;
 
 /**
- * 
- * @returns {string} 当前文件夹的路径
+ * 打包时用于复制目标文件 的插件
  */
-function _dirname() {
-    return path.dirname(fileURLToPath(import.meta.url))
+export async function buildCopy() {
+    genCopy(copyConfig);
+    genHandler(handlerConfig);
 }
