@@ -26,16 +26,19 @@
 <body class="markdown-body">
     <script> window.mdText = '${MD_TEXT}'; window.urlSuffix = '${URL_SUFFIX}';</script>
     <!-- 引入 LazierDocs 核心 -->
-    <script src="./lazierDocs.js"></script>
+    <script src="/docs/lazierDocs.js"></script>
     <!-- 引入 markdown-it 核心 -->
-    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script> -->
+    <script src="/docs/res/markdown-it.min.js"></script>
     <!-- 引入 markdownItAnchor 自动生成标题id -->
-    <script src="https://cdn.jsdelivr.net/npm/markdown-it-anchor@9.2.0/dist/markdownItAnchor.umd.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/markdown-it-anchor@9.2.0/dist/markdownItAnchor.umd.min.js"></script> -->
+    <script src="/docs/res/markdownItAnchor.umd.min.js"></script>
     <!-- 自动生成目录，需要使用占位符 "[[toc]]" -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/markdown-it-toc-done-right@4.2.0/dist/markdownItTocDoneRight.umd.min.js"></script>
+    <!-- <script
+        src="https://cdn.jsdelivr.net/npm/markdown-it-toc-done-right@4.2.0/dist/markdownItTocDoneRight.umd.min.js"></script> -->
+    <script src="/docs/res/markdownItTocDoneRight.umd.min.js"></script>
     <!-- 自定义的工具栏 -->
-    <script src="./DynamicToolbar.js"></script>
+    <script src="/docs/DynamicToolbar.js"></script>
     <!-- 自定义的重写内容 -->
     <script>
         (() => {
