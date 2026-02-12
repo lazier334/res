@@ -7,12 +7,50 @@ on:
 
 jobs:
   deploy:
+    # 仅在指定条件下触发任务
     if: (github.event_name == 'push' && startsWith(github.event.head_commit.message, 'page:')) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    
+    # 设置步骤执行失败时立即终止
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: 检出仓库代码
         uses: actions/checkout@v4
+        # 确保检出完整的提交历史（部分构建可能需要）
+        with:
+          fetch-depth: 0
+
+      - name: 设置 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          # 指定 Node.js 版本（可根据你的项目需求调整，比如 18、20）
+          node-version: 24
+          # 缓存 npm 依赖，加速后续构建
+          cache: 'npm'
+
+      - name: 安装项目依赖
+        run: |
+          echo "开始安装项目依赖..."
+          npm install
+        # 依赖安装失败时终止流程
+        continue-on-error: false
+
+      - name: 执行项目构建 (npm run build)
+        run: |
+          echo "开始执行构建命令 npm run build..."
+          npm run build
+        # 构建失败时终止流程
+        continue-on-error: false
+
+      - name: 验证 html 文件夹是否存在
+        run: |
+          if [ ! -d "./html" ]; then
+            echo "错误：build 完成后未找到 html 文件夹！"
+            exit 1
+          fi
+          echo "✅ html 文件夹验证通过"
 
       - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
@@ -21,3 +59,5 @@ jobs:
           publish_dir: ./html
           publish_branch: gh-pages
           force_orphan: true
+          # 部署成功后显示提示信息
+          commit_message: "Deploy from GitHub Actions: ${{ github.sha }}"
