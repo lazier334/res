@@ -394,10 +394,107 @@
             }
 
             // 生成ADB命令（无需root的强制停止命令）
-            const cmdList = Array.from(pkgSet).map(pkg => `adb shell am force-stop ${pkg}`);
-            document.getElementById('adbCmdOutput').value = cmdList.join('\n');
+            const pkgList = Array.from(pkgSet);
+            document.getElementById('adbCmdOutput').value = getKillSh(pkgList);
             // 启用下载按钮
             document.getElementById('downloadCmdBtn').disabled = false;
+        }
+
+        function getKillSh(cmdList){
+            return `#!/bin/bash
+set -euo pipefail
+
+# 初始化命令前缀和包名数组（关键：提前初始化避免-u选项触发未定义变量错误）
+FORCE_STOP_CMD=""
+APP_PACKAGES=()
+
+# 函数：校验ADB方式是否可用
+check_adb_available() {
+    echo -e "正在检测ADB环境..."
+    # 执行一个无副作用的adb命令，检查返回码
+    if adb shell echo "test" > /dev/null 2>&1; then
+        FORCE_STOP_CMD="adb shell am force-stop"
+        echo -e "✅ 检测到ADB环境可用，将使用ADB方式执行命令"
+        return 0
+    else
+        echo -e "⚠️ ADB方式不可用，尝试检测本地Shell环境..."
+        return 1
+    fi
+}
+
+# 函数：校验本地Shell方式是否可用
+check_shell_available() {
+    # 检查am命令是否存在且有权限执行
+    if command -v am > /dev/null 2>&1 && am force-stop --help > /dev/null 2>&1; then
+        FORCE_STOP_CMD="am force-stop"
+        echo -e "✅ 检测到本地Shell环境可用，将使用本地方式执行命令"
+        return 0
+    else
+        echo -e "❌ 本地Shell方式也不可用"
+        return 1
+    fi
+}
+check_shell_available() {
+    # 合并两个条件：先检查am命令存在，再检查am help可执行；同时区分错误类型
+    if command -v am > /dev/null 2>&1 && am help > /dev/null 2>&1; then
+        FORCE_STOP_CMD="am force-stop"
+        echo -e "✅ 检测到本地Shell环境可用，将使用本地方式执行命令"
+        return 0
+    else
+        # 区分错误原因：是命令不存在，还是有命令但无执行权限
+        if ! command -v am > /dev/null 2>&1; then
+            echo -e "❌ 本地Shell环境不可用：未找到am命令"
+        else
+            echo -e "❌ 本地Shell环境不可用：无am命令执行权限"
+        fi
+        return 1
+    fi
+}
+
+main(){
+    # 初始化包名列表
+    init_app_packages
+    
+    # 校验包名列表是否为空（可选但推荐，避免无意义执行）
+    if [ \${#APP_PACKAGES[@]} -eq 0 ]; then
+        echo -e "❌ 错误：应用包名列表为空，请检查init_app_packages函数！"
+        exit 1
+    fi
+
+    # 主逻辑：权限校验
+    echo -e "===== 开始权限/环境校验 ====="
+    if ! check_adb_available; then
+        if ! check_shell_available; then
+            echo -e "❌ 错误：ADB和本地Shell方式均无法运行相关命令，请检查权限或环境！"
+            exit 1
+        fi
+    fi
+
+    # 执行强制停止操作
+    echo -e "\n===== 开始强制停止应用 ====="
+    for package in "\${APP_PACKAGES[@]}"; do
+        # 执行强制停止命令
+        \${FORCE_STOP_CMD} "\${package}"
+        # 检查命令执行结果
+        if [ $? -eq 0 ]; then
+            echo -e "✅ 成功停止：\${package}"
+        else
+            echo -e "❌ 停止失败：\${package}"
+        fi
+    done
+
+    echo -e "\n===== 所有应用停止操作执行完成 ====="
+}
+
+# 初始化要强制停止的应用包名列表
+init_app_packages(){
+    APP_PACKAGES=(
+        "${cmdList.join('"\n        "')}"
+    )
+}
+
+# 启动主逻辑
+main`
         }
 
         // 下载ADB命令为kill.sh文件
