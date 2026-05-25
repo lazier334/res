@@ -8,7 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const excludeFiles = ['.vitepress'];
 const config = withSidebar({
     ignoreDeadLinks: true,
-    title: "Res",
+    base: '/docs/',
+    title: "Res - lazier334",
     description: "静态资源站点",
     themeConfig: {
         externalLinkIcon: true,
