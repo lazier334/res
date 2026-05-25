@@ -7,3 +7,5 @@ temps
 .idea
 node_modules
 html
+cache
+dist
