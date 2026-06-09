@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>今日预算</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== Dark Theme (default fallback) ===== */
+        body {
+            --bg: #0f0f1a;
+            --text: #e0e0e0;
+            --card-bg: linear-gradient(145deg, #1a1a2e, #16213e);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --card-border-strong: rgba(255, 255, 255, 0.08);
+            --label-color: #888;
+            --sub-color: #666;
+            --title-bg: #1a1a2e;
+            --input-bg: #1a1a2e;
+            --input-border: rgba(255, 255, 255, 0.1);
+            --modal-bg: #1a1a2e;
+            --modal-border: rgba(255, 255, 255, 0.1);
+            --history-date: #aaa;
+            --history-note: #777;
+            --empty-color: #555;
+            --btn-outline-border: rgba(255, 255, 255, 0.2);
+            --btn-outline-text: #ccc;
+            --btn-minor-bg: rgba(255, 255, 255, 0.05);
+            --btn-action-border: rgba(255, 255, 255, 0.1);
+            --btn-action-text: #ccc;
+            --btn-action-active: rgba(255, 255, 255, 0.08);
+            --back-btn-border: rgba(255, 255, 255, 0.15);
+            --back-btn-active: rgba(255, 255, 255, 0.05);
+            --scrollbar-thumb: #333;
+            --toast-bg: #333;
+            --toast-text: #fff;
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --section-title: #ccc;
+            --config-title: #ffd200;
+            --config-label: #aaa;
+            --danger-bg: #e74c3c22;
+            --danger-border: #e74c3c44;
+            --gold-from: #f7971e;
+            --gold-to: #ffd200;
+            --gold-mid: #f5af19;
+            --danger-text: #e74c3c;
+
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        /* ===== Light Theme ===== */
+        body.light {
+            --bg: #f0f2f5;
+            --text: #2c3e50;
+            --card-bg: #ffffff;
+            --card-border: #e8e8e8;
+            --card-border-strong: #ddd;
+            --label-color: #8c8c8c;
+            --sub-color: #999;
+            --title-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #d9d9d9;
+            --modal-bg: #ffffff;
+            --modal-border: #e8e8e8;
+            --history-date: #888;
+            --history-note: #aaa;
+            --empty-color: #bbb;
+            --btn-outline-border: #d9d9d9;
+            --btn-outline-text: #555;
+            --btn-minor-bg: #f5f5f5;
+            --btn-action-border: #e8e8e8;
+            --btn-action-text: #666;
+            --btn-action-active: #f0f0f0;
+            --back-btn-border: #d9d9d9;
+            --back-btn-active: #f5f5f5;
+            --scrollbar-thumb: #ccc;
+            --toast-bg: #333;
+            --toast-text: #fff;
+            --modal-overlay: rgba(0, 0, 0, 0.4);
+            --section-title: #555;
+            --config-title: #e67e22;
+            --config-label: #888;
+            --danger-bg: #fef0f0;
+            --danger-border: #ffccc7;
+            --gold-from: #f7971e;
+            --gold-to: #e67e22;
+            --gold-mid: #f0a030;
+            --danger-text: #e74c3c;
+        }
+
+        /* ===== Pages ===== */
+        .page {
+            display: none;
+            padding: 16px;
+            padding-bottom: 40px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ===== Title Bar ===== */
+        .title-bar {
+            text-align: center;
+            padding: 24px 16px 20px;
+            position: relative;
+        }
+
+        .title-bar h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--gold-from), var(--gold-to));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 6px rgba(247, 151, 30, 0.3));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 16px rgba(247, 151, 30, 0.6));
+            }
+        }
+
+        /* ===== Theme Toggle ===== */
+        .theme-toggle {
+            position: fixed;
+            right: 16px;
+            top: 16px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 50;
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.9) rotate(30deg);
+        }
+
+        /* ===== Data Blocks Row ===== */
+        .data-blocks {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 0 4px;
+            margin-bottom: 16px;
+        }
+
+        .data-block {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px 6px;
+            text-align: center;
+            border: 1px solid var(--card-border);
+            transition: transform 0.15s, box-shadow 0.15s;
+            cursor: default;
+            min-width: 0;
+            animation: fadeInUp 0.5s ease-out both;
+        }
+
+        .data-block:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .data-block:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .data-block:nth-child(3) {
+            animation-delay: 0.19s;
+        }
+
+        .data-block:nth-child(4) {
+            animation-delay: 0.26s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .data-block.clickable {
+            cursor: pointer;
+        }
+
+        .data-block.clickable:active {
+            transform: scale(0.96);
+            box-shadow: 0 0 16px rgba(247, 151, 30, 0.3);
+        }
+
+        .data-block .label {
+            font-size: 12px;
+            color: var(--label-color);
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .data-block .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold-from);
+            word-break: break-all;
+        }
+
+        .data-block .sub {
+            font-size: 16px;
+            color: var(--sub-color);
+            margin-top: 2px;
+        }
+
+        /* ===== Lottery Square ===== */
+        .lottery-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .lottery-square {
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 1 / 1;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 12px rgba(247, 151, 30, 0.15), inset 0 0 12px rgba(247, 151, 30, 0.05);
+                border-color: rgba(247, 151, 30, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 28px rgba(247, 151, 30, 0.35), inset 0 0 28px rgba(247, 151, 30, 0.1);
+                border-color: rgba(247, 151, 30, 0.5);
+            }
+        }
+
+        .lottery-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold-from), var(--gold-mid));
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 24px rgba(247, 151, 30, 0.4);
+            transition: transform 0.15s, box-shadow 0.15s;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .lottery-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 12px rgba(247, 151, 30, 0.6);
+        }
+
+        .lottery-btn.spinning {
+            animation: spin 0.6s ease-in-out;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            30% {
+                transform: rotate(180deg) scale(1.08);
+            }
+
+            60% {
+                transform: rotate(360deg) scale(0.95);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        .draw-result {
+            margin-top: 20px;
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--gold-to);
+            z-index: 1;
+            min-height: 44px;
+            text-align: center;
+        }
+
+        .draw-result.bounce {
+            animation: resultBounce 0.5s ease-out;
+        }
+
+        @keyframes resultBounce {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .page,
+        .toast,
+        .modal-overlay {
+            position: relative;
+            z-index: 1;
+        }
+
+        .draw-note {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--history-note);
+            z-index: 1;
+            text-align: center;
+        }
+
+        .draw-range {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+            font-size: 12px;
+            color: var(--label-color);
+        }
+
+        .draw-range .range-text {
+            white-space: nowrap;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-switch .slider {
+            position: absolute;
+            inset: 0;
+            background: #555;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: background 0.25s;
+        }
+
+        .toggle-switch .slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.25s;
+        }
+
+        .toggle-switch .slider::after {
+            content: '';
+            position: absolute;
+            left: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .toggle-switch input:checked+.slider::after {
+            content: '日均';
+        }
+
+        .toggle-switch input:checked+.slider {
+            background: var(--gold-from);
+        }
+
+        .toggle-switch input:checked+.slider::before {
+            transform: translateX(18px);
+        }
+
+        /* ===== History ===== */
+        .history-section {
+            margin-top: 8px;
+        }
+
+        .history-section h3 {
+            font-size: 16px;
+            color: var(--section-title);
+            margin-bottom: 10px;
+            padding-left: 4px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-month-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-month-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--section-title);
+            user-select: none;
+        }
+
+        .history-month-header .arrow {
+            transition: transform 0.2s;
+            font-size: 12px;
+            color: var(--label-color);
+        }
+
+        .history-month-group.open .history-month-header .arrow {
+            transform: rotate(90deg);
+        }
+
+        .history-month-header .month-label {
+            flex: 1;
+        }
+
+        .history-month-header .month-total {
+            font-size: 13px;
+            color: var(--gold-from);
+        }
+
+        .history-month-items {
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px 0 6px 0;
+        }
+
+        .history-month-group.open .history-month-items {
+            display: flex;
+        }
+
+        .history-item {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--card-border);
+            margin-left: 8px;
+        }
+
+        .history-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-item .date {
+            font-size: 13px;
+            color: var(--history-date);
+        }
+
+        .history-item .amount {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold-from);
+            margin-top: 2px;
+        }
+
+        .history-item .note {
+            font-size: 12px;
+            color: var(--history-note);
+            margin-top: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-item .actions {
+            display: flex;
+            gap: 6px;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .history-item .actions button {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-action-border);
+            background: transparent;
+            color: var(--btn-action-text);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .history-item .actions button:active {
+            background: var(--btn-action-active);
+        }
+
+        .history-item .actions .btn-del {
+            color: var(--danger-text);
+            border-color: var(--danger-border);
+        }
+
+        .empty-history {
+            text-align: center;
+            color: var(--empty-color);
+            padding: 40px 0;
+            font-size: 14px;
+        }
+
+        /* ===== Config Page ===== */
+        .config-section {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .config-section h2 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--config-title);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--config-label);
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--gold-from);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold-from), var(--gold-mid));
+            color: #fff;
+            flex: 1;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--btn-outline-border);
+            color: var(--btn-outline-text);
+        }
+
+        .btn-danger {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-border);
+            color: var(--danger-text);
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--back-btn-border);
+            color: var(--btn-outline-text);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .back-btn:active {
+            background: var(--back-btn-active);
+        }
+
+        /* ===== Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--modal-overlay);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 380px;
+            border: 1px solid var(--modal-border);
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+            color: var(--config-title);
+            font-size: 18px;
+        }
+
+        .modal .btn-row {
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .data-blocks {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .title-bar h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Global Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换主题">☀️</button>
+
+    <!-- ====== MAIN PAGE ====== -->
+    <div class="page active" id="pageMain">
+        <!-- Title -->
+        <div class="title-bar">
+            <h1 id="mainTitle">月赚5800，不当舔狗我随便花</h1>
+        </div>
+
+        <!-- Data Blocks -->
+        <div class="data-blocks">
+            <div class="data-block clickable" id="btnConfig" onclick="showConfig()">
+                <div class="label">配置数据</div>
+                <div class="value" id="updateDate">--</div>
+            </div>
+            <div class="data-block">
+                <div class="label">本月已用</div>
+                <div class="value" id="monthUsed">￥0.0</div>
+            </div>
+            <div class="data-block">
+                <div class="label">本月剩余</div>
+                <div class="value" id="monthRemain">￥5800</div>
+            </div>
+            <div class="data-block">
+                <div class="label">剩余天数</div>
+                <div class="value" id="daysRemain">0天</div>
+            </div>
+        </div>
+
+        <!-- Lottery Square -->
+        <div class="lottery-section">
+            <div class="lottery-square">
+                <button class="lottery-btn" id="lotteryBtn" onclick="doDraw()">点我抽取</button>
+                <div class="draw-result" id="drawResult"></div>
+                <div class="draw-note" id="drawNote"></div>
+                <div class="draw-range">
+                    <span class="range-text" id="rangeText">范围: ￥1 ~ ￥50</span>
+                    <label class="toggle-switch" title="按日均额限制上限">
+                        <input type="checkbox" id="dailyLimitToggle" onchange="updateDailyLimit()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="history-section">
+            <h3>历史记录</h3>
+            <div class="history-list" id="historyList"></div>
+            <div class="empty-history" id="emptyHistory" style="display:none;">暂无记录，点上方按钮开始抽取吧~</div>
+        </div>
+    </div>
+
+    <!-- ====== CONFIG PAGE ====== -->
+    <div class="page" id="pageConfig">
+        <button class="back-btn" onclick="showMain()">← 返回</button>
+        <div class="config-section">
+            <h2>配置设置</h2>
+
+            <div class="form-group">
+                <label>标题文字</label>
+                <input type="text" id="cfgTitle" placeholder="标题文字">
+            </div>
+            <div class="form-group">
+                <label>本月预算（元）</label>
+                <input type="number" id="cfgBudget" placeholder="5800" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>抽取金额最小值（元）</label>
+                <input type="number" id="cfgMin" placeholder="50" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>抽取金额最大值（元）</label>
+                <input type="number" id="cfgMax" placeholder="200" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label>抽取后提示小字</label>
+                <input type="text" id="cfgNote" placeholder="如：今天又可以加鸡腿了！">
+            </div>
+
+            <div class="btn-row" style="margin-bottom:10px;">
+                <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-outline" onclick="exportData()">导出数据</button>
+                <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">导入数据</button>
+            </div>
+            <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+            <div class="btn-row" style="margin-top:16px;">
+                <button class="btn btn-danger" onclick="clearRecords()">清空历史数据</button>
+                <button class="btn btn-danger" onclick="resetAll()">重置所有数据</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for editing history -->
+    <div class="modal-overlay" id="modalEdit">
+        <div class="modal">
+            <h3>编辑记录</h3>
+            <div class="form-group">
+                <label>时间</label>
+                <input type="datetime-local" id="editDate">
+            </div>
+            <div class="form-group">
+                <label>金额（元）</label>
+                <input type="number" id="editAmount" step="0.01" min="0">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-outline" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const STORAGE_KEY = 'moneyAppData';
+
+        function getDefaultData() {
+            const now = new Date();
+            return {
+                config: {
+                    title: '今日预算',
+                    monthlyBudget: 5800,
+                    drawMin: 50,
+                    drawMax: 200,
+                    drawNote: '今天又可以加鸡腿了！',
+                    theme: 'light',
+                    lastUpdated: now.toISOString()
+                },
+                records: []
+            };
+        }
+
+        function getMonthLabel(d) {
+            return d.getFullYear() + '年' + (d.getMonth() + 1) + '月';
+        }
+
+        function getCurrentMonthKey() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) { }
+            return getDefaultData();
+        }
+
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        let appData = loadData();
+        let editingId = null;
+
+        function rand(min, max) {
+            return Math.round((Math.random() * (max - min) + min) * 100) / 100;
+        }
+
+        function daysInMonth(y, m) {
+            return new Date(y, m, 0).getDate();
+        }
+
+        function getRemainingDays() {
+            const now = new Date();
+            const total = daysInMonth(now.getFullYear(), now.getMonth() + 1);
+            return total - now.getDate();
+        }
+
+        function getMonthUsed() {
+            const key = getCurrentMonthKey();
+            return appData.records
+                .filter(r => tsToDateStr(r.timestamp || r.date).startsWith(key))
+                .reduce((sum, r) => sum + (r.amount || 0), 0);
+        }
+
+        function tsToDateStr(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            if (isNaN(d.getTime())) return String(ts).substring(0, 10);
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+        }
+
+        function tsToMonthKey(ts) {
+            return tsToDateStr(ts).substring(0, 7);
+        }
+
+        function refreshMain() {
+            const cfg = appData.config;
+            document.getElementById('mainTitle').textContent = cfg.title;
+            document.getElementById('updateDate').textContent = cfg.lastUpdated ? tsToDateStr(cfg.lastUpdated) : '--';
+
+            const used = getMonthUsed();
+            document.getElementById('monthUsed').textContent = '￥' + used.toFixed(1);
+
+            const remain = Math.max(0, cfg.monthlyBudget - used);
+            document.getElementById('monthRemain').textContent = '￥' + remain.toFixed(1);
+
+            const rd = getRemainingDays();
+            document.getElementById('daysRemain').textContent = rd + '天';
+            if (rd > 0) {
+                const daily = remain / rd;
+                document.getElementById('daysRemain').textContent = rd + '天 / 日均可￥' + daily.toFixed(0);
+            } else {
+                document.getElementById('daysRemain').textContent = '本月已过';
+            }
+
+            document.getElementById('drawNote').textContent = cfg.drawNote || '';
+            updateRangeDisplay();
+            renderHistory();
+        }
+
+        function getEffectiveMax() {
+            const cfg = appData.config;
+            const toggle = document.getElementById('dailyLimitToggle');
+            if (toggle && toggle.checked) {
+                const used = getMonthUsed();
+                const remain = Math.max(0, cfg.monthlyBudget - used);
+                const rd = getRemainingDays();
+                if (rd > 0) return remain / rd;
+            }
+            return cfg.drawMax;
+        }
+
+        function updateRangeDisplay() {
+            const el = document.getElementById('rangeText');
+            const cfg = appData.config;
+            const effMax = getEffectiveMax();
+            el.textContent = '范围: ￥' + cfg.drawMin + ' ~ ￥' + effMax.toFixed(0);
+        }
+
+        function updateDailyLimit() {
+            updateRangeDisplay();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const empty = document.getElementById('emptyHistory');
+            const currentMonthKey = getCurrentMonthKey();
+
+            if (appData.records.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            const monthCounts = {};
+            const ordinals = {};
+            const sortedAsc = [...appData.records].sort((a, b) => {
+                const ta = a.timestamp || a.date;
+                const tb = b.timestamp || b.date;
+                return String(ta).localeCompare(String(tb));
+            });
+            sortedAsc.forEach(r => {
+                const mk = tsToMonthKey(r.timestamp || r.date);
+                monthCounts[mk] = (monthCounts[mk] || 0) + 1;
+                ordinals[r.id] = monthCounts[mk];
+            });
+
+            const groups = {};
+            const records = [...appData.records].sort((a, b) => {
+                const ta = a.timestamp || a.date;
+                const tb = b.timestamp || b.date;
+                return String(tb).localeCompare(String(ta));
+            });
+            records.forEach(r => {
+                const mk = tsToMonthKey(r.timestamp || r.date);
+                if (!groups[mk]) groups[mk] = [];
+                groups[mk].push(r);
+            });
+
+            const monthKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+            const monthLabels = {};
+
+            list.innerHTML = monthKeys.map(mk => {
+                const isCurrent = mk === currentMonthKey;
+                monthLabels[mk] = mk.replace('-', '年') + '月';
+                const total = groups[mk].reduce((s, r) => s + (r.amount || 0), 0);
+                const openClass = isCurrent ? ' open' : '';
+
+                const itemsHtml = groups[mk].map(r => {
+                    const nth = ordinals[r.id] || 1;
+                    const ordinalLabel = isCurrent ? '本月第' + nth + '次' : monthLabels[mk] + '第' + nth + '次';
+                    const d = r.timestamp ? new Date(r.timestamp) : new Date(r.date);
+                    const dateStr = tsToDateStr(r.timestamp || r.date);
+                    const timeStr = r.timestamp ? ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') : '';
+                    return `
+          <div class="history-item">
+            <div class="info">
+              <div class="date">${dateStr}${timeStr} · ${ordinalLabel}</div>
+              <div class="amount">￥${(r.amount || 0).toFixed(2)}</div>
+            </div>
+            <div class="actions">
+              <button onclick="openEdit('${r.id}')" title="编辑">✏️</button>
+              <button class="btn-del" onclick="delRecord('${r.id}')" title="删除">❌️</button>
+            </div>
+          </div>`;
+                }).join('');
+
+                return `
+        <div class="history-month-group${openClass}">
+          <div class="history-month-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="arrow">▶</span>
+            <span class="month-label">${monthLabels[mk]}</span>
+            <span class="month-total">合计 ￥${total.toFixed(2)}</span>
+          </div>
+          <div class="history-month-items">${itemsHtml}</div>
+        </div>`;
+            }).join('');
+        }
+
+        function escHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function doDraw() {
+            const cfg = appData.config;
+            const btn = document.getElementById('lotteryBtn');
+            const result = document.getElementById('drawResult');
+
+            if (btn.classList.contains('spinning')) return;
+            btn.classList.add('spinning');
+            result.textContent = '...';
+
+            setTimeout(() => {
+                btn.classList.remove('spinning');
+                const amount = rand(cfg.drawMin, getEffectiveMax());
+                result.textContent = '￥' + amount.toFixed(2);
+                result.classList.remove('bounce');
+                void result.offsetWidth;
+                result.classList.add('bounce');
+
+                const rect = btn.getBoundingClientRect();
+                burstConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+                const now = new Date();
+
+                appData.records.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                    timestamp: now.toISOString(),
+                    amount: amount
+                });
+                saveData(appData);
+                refreshMain();
+                showToast('抽取成功: ￥' + amount.toFixed(2));
+            }, 650);
+        }
+
+        function openEdit(id) {
+            editingId = id;
+            const r = appData.records.find(r => r.id === id);
+            if (!r) return;
+            const ts = r.timestamp || r.date;
+            const d = new Date(ts);
+            const localStr = isNaN(d.getTime())
+                ? String(ts).substring(0, 16)
+                : d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0') + 'T' +
+                String(d.getHours()).padStart(2, '0') + ':' +
+                String(d.getMinutes()).padStart(2, '0');
+            document.getElementById('editDate').value = localStr;
+            document.getElementById('editAmount').value = r.amount;
+            document.getElementById('modalEdit').classList.add('active');
+        }
+
+        function closeEditModal() {
+            editingId = null;
+            document.getElementById('modalEdit').classList.remove('active');
+        }
+
+        function saveEdit() {
+            if (!editingId) return;
+            const r = appData.records.find(r => r.id === editingId);
+            if (!r) return;
+            const newVal = document.getElementById('editDate').value;
+            if (newVal) {
+                r.timestamp = new Date(newVal).toISOString();
+            }
+            r.amount = parseFloat(document.getElementById('editAmount').value) || 0;
+            saveData(appData);
+            closeEditModal();
+            refreshMain();
+            showToast('记录已更新');
+        }
+
+        function delRecord(id) {
+            if (!confirm('确定删除这条记录吗？')) return;
+            appData.records = appData.records.filter(r => r.id !== id);
+            saveData(appData);
+            refreshMain();
+            showToast('记录已删除');
+        }
+
+        function showMain() {
+            document.getElementById('pageConfig').classList.remove('active');
+            document.getElementById('pageMain').classList.add('active');
+            refreshMain();
+        }
+
+        function showConfig() {
+            document.getElementById('pageMain').classList.remove('active');
+            document.getElementById('pageConfig').classList.add('active');
+            const cfg = appData.config;
+            document.getElementById('cfgTitle').value = cfg.title;
+            document.getElementById('cfgBudget').value = cfg.monthlyBudget;
+            document.getElementById('cfgMin').value = cfg.drawMin;
+            document.getElementById('cfgMax').value = cfg.drawMax;
+            document.getElementById('cfgNote').value = cfg.drawNote || '';
+        }
+
+        function saveConfig() {
+            const cfg = appData.config;
+            cfg.title = document.getElementById('cfgTitle').value || cfg.title;
+            cfg.monthlyBudget = parseFloat(document.getElementById('cfgBudget').value) || cfg.monthlyBudget;
+            cfg.drawMin = parseFloat(document.getElementById('cfgMin').value) || cfg.drawMin;
+            cfg.drawMax = parseFloat(document.getElementById('cfgMax').value) || cfg.drawMax;
+            cfg.drawNote = document.getElementById('cfgNote').value;
+            cfg.lastUpdated = new Date().toISOString();
+            saveData(appData);
+            showMain();
+            showToast('配置已保存');
+        }
+
+        function exportData() {
+            const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'money_data_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('数据已导出');
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (data.config && Array.isArray(data.records)) {
+                        if (confirm('导入将覆盖当前所有数据，确定继续？')) {
+                            appData = data;
+                            appData.config.lastUpdated = new Date().toISOString();
+                            saveData(appData);
+                            applyTheme();
+                            refreshMain();
+                            showToast('数据已导入');
+                        }
+                    } else {
+                        showToast('文件格式不正确');
+                    }
+                } catch (err) {
+                    showToast('文件解析失败');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        function resetAll() {
+            if (confirm('确定要清空所有数据恢复到默认状态吗？此操作不可撤销！')) {
+                appData = getDefaultData();
+                saveData(appData);
+                applyTheme();
+                refreshMain();
+                showToast('已重置');
+            }
+        }
+
+        function clearRecords() {
+            if (!confirm('确定要清空所有历史记录吗？（配置不受影响）')) return;
+            appData.records = [];
+            saveData(appData);
+            refreshMain();
+            showToast('历史数据已清空');
+        }
+
+        function toggleTheme() {
+            appData.config.theme = appData.config.theme === 'light' ? 'dark' : 'light';
+            saveData(appData);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const theme = appData.config.theme || 'light';
+            const body = document.body;
+            const btn = document.getElementById('themeToggle');
+            if (theme === 'light') {
+                body.classList.add('light');
+                if (btn) btn.textContent = '☀️';
+            } else {
+                body.classList.remove('light');
+                if (btn) btn.textContent = '🌙';
+            }
+            startBgParticles();
+        }
+
+        // ===== Background Particles =====
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let bgParticles = [];
+        let bgAnimId;
+
+        function initBgParticles() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            const count = Math.floor((bgCanvas.width * bgCanvas.height) / 18000);
+            bgParticles = [];
+            for (let i = 0; i < count; i++) {
+                bgParticles.push({
+                    x: Math.random() * bgCanvas.width,
+                    y: Math.random() * bgCanvas.height,
+                    r: Math.random() * 1.5 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.3,
+                    speedY: (Math.random() - 0.5) * 0.3,
+                    alpha: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+
+        function drawBgParticles() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            const isLight = document.body.classList.contains('light');
+            const color = isLight ? '200, 150, 80' : '247, 151, 30';
+            bgParticles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0) p.x = bgCanvas.width;
+                if (p.x > bgCanvas.width) p.x = 0;
+                if (p.y < 0) p.y = bgCanvas.height;
+                if (p.y > bgCanvas.height) p.y = 0;
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                bgCtx.fillStyle = 'rgba(' + color + ',' + p.alpha + ')';
+                bgCtx.fill();
+            });
+            bgAnimId = requestAnimationFrame(drawBgParticles);
+        }
+
+        function startBgParticles() {
+            if (bgAnimId) cancelAnimationFrame(bgAnimId);
+            initBgParticles();
+            drawBgParticles();
+        }
+
+        window.addEventListener('resize', startBgParticles);
+
+        // ===== Confetti Burst =====
+        function burstConfetti(x, y) {
+            const colors = ['#f7971e', '#ffd200', '#f5af19', '#ff6b6b', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+            const count = 40;
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                const size = Math.random() * 8 + 4;
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 120 + 60;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.cssText = `
+              position: fixed;
+              left: ${x}px;
+              top: ${y}px;
+              width: ${size}px;
+              height: ${size}px;
+              background: ${color};
+              border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+              pointer-events: none;
+              z-index: 999;
+              opacity: 1;
+              transition: all ${Math.random() * 0.6 + 0.5}s ease-out;
+            `;
+                document.body.appendChild(particle);
+                requestAnimationFrame(() => {
+                    particle.style.transform =
+                        'translate(' + Math.cos(angle) * velocity + 'px, ' + Math.sin(angle) * velocity + 'px) rotate(' +
+                        Math.random() * 720 + 'deg)';
+                    particle.style.opacity = '0';
+                });
+                setTimeout(() => particle.remove(), 1200);
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._tid);
+            t._tid = setTimeout(() => t.classList.remove('show'), 1800);
+        }
+
+        // Init
+        applyTheme();
+        refreshMain();
+        startBgParticles();
+    </script>
+
+</body>
+
+</html>
