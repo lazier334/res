@@ -9,3 +9,4 @@ node_modules
 html
 cache
 dist
+projects/*/index.md

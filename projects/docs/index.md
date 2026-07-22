@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "Res"
+  name: "Res - lazier334"
   text: "静态资源站点"
   tagline: <a href="https://github.com/lazier334">lazier334</a> 存放资源与文档使用
   actions:

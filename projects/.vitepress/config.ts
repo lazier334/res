@@ -1,16 +1,29 @@
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { defineConfig } from 'vitepress'
 import { withSidebar } from 'vitepress-sidebar'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ProjectName = process.env.PROJECT_NAME || 'docs';
+const api = `/${ProjectName}/`;
+const inputDir = path.join(import.meta.dirname, '../', ProjectName);
+const outputDir = path.join(import.meta.dirname, '../../html', ProjectName);
 const excludeFiles = ['.vitepress'];
+console.log('inputDir:', inputDir)
+console.log('outputDir:', outputDir)
 const config = withSidebar({
     ignoreDeadLinks: true,
-    base: '/docs/',
+    base: api,
+    srcDir: inputDir,
+    outDir: outputDir,
     title: "Res - lazier334",
     description: "静态资源站点",
+    vite: {
+        server: {
+            port: 3000,
+            host: true,
+            allowedHosts: true,
+        },
+    },
     themeConfig: {
         externalLinkIcon: true,
         nav: [
@@ -46,12 +59,12 @@ const config = withSidebar({
         }
     },
     async buildEnd(siteConfig) {
-        const srcBase = path.dirname(__dirname);
+        const srcBase = siteConfig.srcDir;
         const destBase = siteConfig.outDir;
 
         console.log('markdown 构建完成！开始复制附加资源...');
         try {
-            fs.readdirSync(srcBase).forEach((name:string) => {
+            fs.readdirSync(srcBase).forEach((name: string) => {
                 if (!excludeFiles.includes(name)) {
                     copyWithConflictCheck(path.join(srcBase, name), path.join(destBase, name), (srcPath: string, destPath: string) => {
                         // 不允许复制的文件列表
@@ -70,11 +83,11 @@ const config = withSidebar({
         }
         console.info('附加资源已复制完成！');
         // 复制打包产物到输出目录
-        fs.cpSync(destBase, path.join(__dirname,'../../html/docs'), { recursive: true, force: true });
-        console.log('已移动docs构建产物');
+        // fs.cpSync(destBase, path.join(__dirname, '../../html/docs'), { recursive: true, force: true });
+        // console.log('已移动docs构建产物');
     }
 }, {
-    documentRootPath: 'docs'
+    documentRootPath: path.relative(process.cwd(), inputDir)
 });
 buildStart();
 
@@ -110,34 +123,41 @@ function copyWithConflictCheck(src: string, dest: string, copyHandler: (src: str
  * 构建index.md文件
  */
 function buildStart() {
-    console.log('构建 index.md');
-    const docsPath = path.dirname(__dirname);
-    const names = fs.readdirSync(docsPath).filter(name => !(excludeFiles.includes(name) ||
-        fs.statSync(path.join(docsPath, name)).isFile()));
-    const targetFile = path.join(docsPath, 'index.md');
-    const actionsMD = names.map(name => `
-    - theme: alt
-      text: ${name.toUpperCase()}
-      link: /${name}`).join('');
-    const featuresMD = `
-  - title: 全新文档
-    details: 提供更佳的阅读体验
-  - title: JILI
-    details: 去除多重限制并自定义协议
-  - title: PG
-    details: 还原官方多个版本的协议`;
-    let md = `---
+    console.log(`构建 ${ProjectName} 项目的 index.md `);
+    const names = fs.readdirSync(inputDir).filter(name => !(excludeFiles.includes(name) ||
+        fs.statSync(path.join(inputDir, name)).isFile()));
+    const targetFile = path.join(inputDir, 'index.md');
+    let template = `---
 layout: home
 
 hero:
-  name: "${config.title}"
-  text: "${config.description}"
+  name: "{name}"
+  text: "{text}"
   tagline: <a href="https://github.com/lazier334">lazier334</a> 存放资源与文档使用
-  actions:${actionsMD.replace('theme: alt', 'theme: brand')}
+  actions: {actions}
 
-features:${featuresMD}
+features: 
+  - title: 文档
+    details: 提供更佳的阅读体验
+  - title: item1
+    details: details1
+  - title: item2
+    details: details2
 ---
-
 `;
+    const templateFile = path.join(inputDir, 'index.md.template');
+    if (fs.existsSync(templateFile)) {
+        template = fs.readFileSync(templateFile, 'utf8');
+    }
+    const actionsMD = names.map(name => `
+    - theme: alt
+      text: ${name.toUpperCase()}
+      link: /${name}
+    `).join('');
+
+    const md = template.replaceAll('{name}', config.title || 'name')
+        .replaceAll('{text}', config.description || 'text')
+        .replaceAll('{actions}', actionsMD.replace('theme: alt', 'theme: brand'))
+
     fs.writeFileSync(targetFile, md);
 }

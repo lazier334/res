@@ -18,12 +18,14 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "vitepress build docs",
+    "build": "node projects/buildAll.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:lazierserver": "PROJECT_NAME=lazierserver npx vitepress dev projects"
   },
   "devDependencies": {
+    "@types/node": "^26.1.1",
     "vitepress": "^2.0.0-alpha.17",
     "vitepress-sidebar": "^1.36.1"
   }
