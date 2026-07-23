@@ -35,7 +35,7 @@ const config = withSidebar({
         ],
         outline: {
             label: '目录',
-            level: [2, 3]
+            level: [2, 5]
         },
         search: {
             provider: 'local',

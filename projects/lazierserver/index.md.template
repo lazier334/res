@@ -12,4 +12,6 @@ features:
     details: 基于nodejs快速启动
   - title: 动态应用
     details: 灵活测试接口与资源
+  - title: 开源地址
+    details: <a href="https://github.com/lazier334/LazierServer" target="_blank">https://github.com/lazier334/LazierServer</a>
 ---
