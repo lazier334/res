@@ -2,9 +2,9 @@
 layout: home
 
 hero:
-  name: "LazierServer"
-  text: 资源服务器
-  tagline: 一个可以快速搭建的服务器 by <a href="https://github.com/lazier334">lazier334</a>
+  name: {name}
+  text: {text}
+  tagline: {tagline}
   actions: {actions}
 
 features: 
