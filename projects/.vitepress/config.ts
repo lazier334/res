@@ -15,7 +15,7 @@ const projectConfigFile = path.join(inputDir, 'config.json');
 if (fs.existsSync(projectConfigFile)) {
     try {
         projectConfig = JSON.parse(fs.readFileSync(projectConfigFile, 'utf8'));
-        console.log('当前项目配置:', projectConfig)
+        console.log(`当前项目${ProjectName}的配置:`, projectConfig);
     } catch (err) {
         console.log('读取配置失败!', err);
     }
@@ -106,7 +106,6 @@ const config = appendObjCore(
         }
     )
 );
-console.log('最终配置:', config)
 buildStart();
 export default defineConfig(config);
 
@@ -174,12 +173,12 @@ function buildStart() {
 layout: home
 
 hero:
-  name: "{name}"
-  text: "{text}"
-  tagline: <a href="https://github.com/lazier334">lazier334</a> 存放资源与文档使用
+  name: {name}
+  text: {text}
+  tagline: {tagline}
   actions: {actions}
 
-features: 
+features:
   - title: 文档
     details: 提供更佳的阅读体验
   - title: item1
@@ -187,6 +186,7 @@ features:
   - title: item2
     details: details2
 ---
+
 `;
     const templateFile = path.join(inputDir, 'index.md.template');
     if (fs.existsSync(templateFile)) {
@@ -195,8 +195,7 @@ features:
     const actionsMD = names.map(name => `
     - theme: alt
       text: ${name.toUpperCase()}
-      link: /${name}
-    `).join('');
+      link: /${name}`).join('');
 
     const md = template.replaceAll('{name}', config.title || 'name')
         .replaceAll('{text}', config.description || 'text')
