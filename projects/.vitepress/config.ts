@@ -158,6 +158,7 @@ features:
     const md = template.replaceAll('{name}', config.title || 'name')
         .replaceAll('{text}', config.description || 'text')
         .replaceAll('{actions}', actionsMD.replace('theme: alt', 'theme: brand'))
+        .replaceAll('{date}', new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }))
 
     fs.writeFileSync(targetFile, md);
 }
