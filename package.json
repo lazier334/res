@@ -19,9 +19,9 @@
   },
   "scripts": {
     "build": "node projects/buildAll.js",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
+    "docs:dev": "PROJECT_NAME=docs npx vitepress dev projects",
+    "docs:build": "PROJECT_NAME=docs npx vitepress build projects",
+    "docs:preview": "PROJECT_NAME=docs npx vitepress preview projects",
     "docs:lazierserver": "PROJECT_NAME=lazierserver npx vitepress dev projects"
   },
   "devDependencies": {

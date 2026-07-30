@@ -128,7 +128,8 @@
 a[target="_blank"]::after,
 a[download]::after {
   content: "";
-  display: inline-block;
+  /* 使用 !important 是在某些特殊情况下，这个配置会失效 */
+  display: inline-block !important;
   width: 1em !important;
   height: 1em !important;
   margin-left: 0.2em;
