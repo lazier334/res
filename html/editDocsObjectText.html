@@ -217,7 +217,7 @@
                 const innerContent = prefixedLines.join('\n');
                 // 用反引号包裹 —— 注意：如果内容本身包含反引号，这里不做转义（符合JS模板字面量直观展示）
                 // 但为了更严谨，可以保留原样展示，用户看到的就是反引号字符串区块
-                const result = '`\n' + innerContent + `\n${prefix}\``;
+                const result = '`\n' + innerContent + `\n${prefix.replace('_', '').replace('    ', '')}\``;
 
                 output.value = result;
             }
