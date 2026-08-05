@@ -185,7 +185,8 @@
             <div class="panel-header">
                 <label for="prefix">🏷️ 前缀</label>
                 <input type="text" id="prefix" class="prefix-input" value=" _" placeholder="输入前缀，如  _" autofocus>
-                <span class="prefix-hint">即时预览</span>
+                <input type="checkbox" id="simplePrefix" checked>
+                <span class="prefix-hint">精简前缀</span>
             </div>
             <textarea id="output" placeholder="处理后结果将显示在这里…"></textarea>
         </div>
@@ -199,11 +200,14 @@
             const prefixInput = document.getElementById('prefix');
             const output = document.getElementById('output');
             const copyBtn = document.getElementById('copyBtn');
+            const simplePrefix = document.getElementById('simplePrefix');
 
             // 核心处理函数：将左侧文本按行加前缀，并用反引号包裹
             function processText() {
                 const raw = source.value;
                 const prefix = prefixInput.value;
+                const TrimChar = prefix.replace(prefix.trim(), '');
+                const allPrefix = !simplePrefix.checked;
 
                 // 转义反斜杠，然后按行分割，保留空行
                 const lines = raw.replaceAll('\\', '\\\\')
@@ -212,7 +216,7 @@
                     .trim()
                     .split('\n');
                 // 每一行加上前缀（包括空行也加，保持行数一致）
-                const prefixedLines = lines.map(line => prefix + line);
+                const prefixedLines = lines.map((line, i) => (i == 0 || allPrefix ? prefix : TrimChar) + line);
                 // 用换行符拼接
                 const innerContent = prefixedLines.join('\n');
                 // 用反引号包裹 —— 注意：如果内容本身包含反引号，这里不做转义（符合JS模板字面量直观展示）
@@ -236,6 +240,7 @@
             // 绑定输入事件
             source.addEventListener('input', debouncedProcess);
             prefixInput.addEventListener('input', debouncedProcess);
+            simplePrefix.addEventListener('change', debouncedProcess);
 
             // 初始执行一次
             processText();
