@@ -1,0 +1,1 @@
+import{c as i,S as a,j as n,m as l}from"./chunks/framework.C1BbTyl5.js";const c=JSON.parse('{"title":"安装指南","description":"","frontmatter":{},"headers":[],"relativePath":"使用/1.安装指南.md","filePath":"使用/1.安装指南.md"}'),h={name:"使用/1.安装指南.md"};function e(t,s,p,k,r,d){return a(),n("div",null,[...s[0]||(s[0]=[l("",44)])])}const o=i(h,[["render",e]]);export{c as __pageData,o as default};

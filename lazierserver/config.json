@@ -1,0 +1,23 @@
+{
+    "title": "LazierServer",
+    "description": "资源服务器",
+    "tagline": "一个可以快速搭建的服务器 by <a href=\"https://github.com/lazier334\">lazier334</a>",
+    "themeConfig": {
+        "nav": [
+            {
+                "text": "首页",
+                "link": "/"
+            },
+            {
+                "text": "文档",
+                "link": "/-start-"
+            }
+        ],
+        "socialLinks": [
+            {
+                "icon": "github",
+                "link": "https://github.com/lazier334/LazierServer"
+            }
+        ]
+    }
+}

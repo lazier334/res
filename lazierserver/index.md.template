@@ -1,0 +1,17 @@
+---
+layout: home
+
+hero:
+  name: {name}
+  text: {text}
+  tagline: {tagline}
+  actions: {actions}
+
+features: 
+  - title: 文档更新日期
+    details: {date}
+  - title: 快速搭建 & 动态应用
+    details: 基于nodejs快速启动 & 灵活测试接口与资源
+  - title: 开源地址
+    details: <a href="https://github.com/lazier334/LazierServer" target="_blank">https://github.com/lazier334/LazierServer</a>
+---
