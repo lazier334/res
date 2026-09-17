@@ -1,0 +1,1 @@
+import{c as r,S as a,j as i,m as t}from"./chunks/framework.C1BbTyl5.js";const f=JSON.parse('{"title":"使用文档","description":"","frontmatter":{},"headers":[],"relativePath":"使用/index.md","filePath":"使用/index.md"}'),l={name:"使用/index.md"};function n(s,e,o,h,d,c){return a(),i("div",null,[...e[0]||(e[0]=[t("",6)])])}const m=r(l,[["render",n]]);export{f as __pageData,m as default};

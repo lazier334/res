@@ -1,0 +1,1 @@
+import{c as i,S as a,j as n,m as h}from"./chunks/framework.C1BbTyl5.js";const g=JSON.parse('{"title":"插件系统","description":"","frontmatter":{},"headers":[],"relativePath":"开发/2.插件系统.md","filePath":"开发/2.插件系统.md"}'),t={name:"开发/2.插件系统.md"};function k(l,s,p,e,r,E){return a(),n("div",null,[...s[0]||(s[0]=[h("",99)])])}const y=i(t,[["render",k]]);export{g as __pageData,y as default};

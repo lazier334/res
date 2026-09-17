@@ -1,0 +1,1 @@
+import{c as i,S as a,j as n,m as h}from"./chunks/framework.C1BbTyl5.js";const g=JSON.parse('{"title":"项目架构","description":"","frontmatter":{},"headers":[],"relativePath":"开发/1.项目架构.md","filePath":"开发/1.项目架构.md"}'),l={name:"开发/1.项目架构.md"};function k(t,s,p,e,r,E){return a(),n("div",null,[...s[0]||(s[0]=[h("",49)])])}const o=i(l,[["render",k]]);export{g as __pageData,o as default};
